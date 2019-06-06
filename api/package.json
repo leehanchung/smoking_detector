@@ -1,0 +1,12 @@
+{
+  "name": "hello-world-han",
+  "description": "",
+  "version": "0.1.0",
+  "dependencies": {
+    "serverless-optimizer-plugin": "^2.5.1"
+  },
+  "devDependencies": {
+    "serverless-python-requirements": "^4.3.0",
+    "serverless-wsgi": "^1.7.2"
+  }
+}
