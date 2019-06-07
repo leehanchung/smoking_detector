@@ -3,4 +3,5 @@ api/node_modules/*
 api/.serverless/*
 api/.requirements.zip
 api/android/*
+api/mockup.py.bak
 npm-debug.log

@@ -1,9 +1,10 @@
-"""Flask web server serving text_recognizer predictions."""
+"""Flask web server serving smoking_detector predictions."""
 # From https://github.com/UnitedIncome/serverless-python-requirements
 # From https://github.com/full-stack-deep-learning/fsdl-text-recognizer-project/blob/master/lab9_sln/api/app.py
 # app.py is the actuall app.  it imports smoking_detector's detector models
 # to make detections.
 # make it print a segmented image online first
+
 try:
     import unzip_requirements  # pylint: disable=unused-import
 except ImportError:
@@ -17,7 +18,7 @@ import numpy as np
 # Tensorflow and model reading libraries
 import six.moves.urllib as urllib
 import tensorflow as tf
-import tarfile, zipfile
+#import tarfile, zipfile
 
 from distutils.version import StrictVersion
 from collections import defaultdict
@@ -45,11 +46,16 @@ from smoking_detector.utils.utils import visualization_utils as vis_util
 # from text_recognizer.datasets import IamLinesDataset
 #import text_recognizer.util as util
 
+PATH_TO_FROZEN_GRAPH = 'smoking_detector/weights/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
+PATH_TO_LABELS = 'smoking_detector/datasets/mscoco_label_map.pbtxt'
+#os.path.join('smoking_detector/dataset/', 'mscoco_label_map.pbtxt')
+
+
 app = Flask(__name__)  # pylint: disable=invalid-name
 
 # Tensorflow bug: https://github.com/keras-team/keras/issues/2397
-with backend.get_session().graph.as_default() as _:
-    predictor = LinePredictor()  # pylint: disable=invalid-name
+#with backend.get_session().graph.as_default() as _:
+#    predictor = LinePredictor()  # pylint: disable=invalid-name
     # predictor = LinePredictor(dataset_cls=IamLinesDataset)
 
 @app.route('/')
@@ -57,7 +63,7 @@ def index():
     return 'Hello, world!'
 
 
-@app.route('/v1/predict', methods=['GET', 'POST'])
+@app.route('/image/predict', methods=['GET', 'POST'])
 def predict():
     image = _load_image()
     with backend.get_session().graph.as_default() as _:
@@ -72,6 +78,21 @@ def detect():
     return None
 
 
+def _load_model(tf_graph, model_file):
+    #detection_graph = tf.Graph()
+    with tf_graph.as_default():
+      od_graph_def = tf.GraphDef()
+      with tf.gfile.GFile(model_file, 'rb') as fid:
+        serialized_graph = fid.read()
+        od_graph_def.ParseFromString(serialized_graph)
+        tf.import_graph_def(od_graph_def, name='')
+    return tf_graph
+
+def _load_label(label_file):
+    category_index = label_map_util.create_category_index_from_labelmap(label_file, use_display_name=True)
+    return None
+
+
 def _load_video_url():
     return None
 
@@ -81,17 +102,20 @@ def _load_image():
         data = request.get_json()
         if data is None:
             return 'no json received'
-        return util.read_b64_image(data['image'], grayscale=True)
+        return util.read_b64_image(data['image'])#, grayscale=True)
     if request.method == 'GET':
         image_url = request.args.get('image_url')
         if image_url is None:
             return 'no image_url defined in query string'
         print("INFO url {}".format(image_url))
-        return util.read_image(image_url, grayscale=True)
+        return util.read_image(image_url)#, grayscale=True)
     raise ValueError('Unsupported HTTP method')
 
 
 def main():
+    detection_graph = tf.Graph()
+    _load_model(tf.Graph(), PATH_TO_FROZEN_GRAPH)
+    _load_label(PATH_TO_LABELS)
     app.run(host='0.0.0.0', port=8000, debug=False)  # nosec
 
 
