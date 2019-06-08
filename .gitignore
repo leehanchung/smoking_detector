@@ -1,7 +1,9 @@
-.pytest_cache/*
-api/node_modules/*
-api/.serverless/*
-api/.requirements.zip
-api/android/*
-api/mockup.py.bak
+.pytest_cache/
+node_modules/
+.serverless/
+.requirements.zip
+android/
+mockup.py.bak
 npm-debug.log
+package-lock.json
+requirements.txt-e

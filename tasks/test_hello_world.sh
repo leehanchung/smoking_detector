@@ -1,2 +1,3 @@
 #!/bin/bash
-pipenv run pytest -s api
+# pipenv run 
+pytest -s api

@@ -1,4 +1,4 @@
-service: hello-world-han
+service: smoking-detector-adl
 
 frameworkVersion: ">=1.2.0 <2.0.0"
 
@@ -6,7 +6,7 @@ package:
   exclude:
     - "**/*"
   include:
-    - hello_world.py
+    - app.py
 
 provider:
   name: aws
@@ -26,13 +26,14 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-wsgi
-
 custom:
   wsgi:
-    app: hello_world.app
+    app: app.app
     packRequirements: false
   pythonRequirements:
     dockerizePip: true
+    # dockerFile: ./Dockerfile
+    dockerImage: smoking_detector_img:latest
     slim: true
     slimPatterns:
       - "**/*.egg-info*"
