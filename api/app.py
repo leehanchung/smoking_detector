@@ -4,18 +4,15 @@
 # app.py is the actuall app.  it imports smoking_detector's detector models
 # to make detections.
 
-#try:
-#    import unzip_requirements  # pylint: disable=unused-import
-#except ImportError:
-#    pass
+try:
+    import unzip_requirements  # pylint: disable=unused-import
+except ImportError:
+    pass
 
 from flask import Flask, request, jsonify
 # Must compile and install opencv-python, won't work if pip install opencv-python
 # Video processing libraries
 import cv2, pafy, youtube_dl
-from PIL import Image
-
-import click
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend

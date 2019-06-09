@@ -5,7 +5,7 @@ FROM python:3.6
 # Install pipenv (alpine uses apk add/update vs ubuntu apt-get
 RUN apt-get update && apt-get install python3-pip -y && pip3 install pipenv
 
-RUN apt-get install -y libsm6 libxext6 libxrender-dev
+#RUN apt-get install -y libsm6 libxext6 libxrender-dev
 
 # Create the working directory
 RUN set -ex && mkdir /repo

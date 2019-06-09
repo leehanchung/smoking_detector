@@ -6,7 +6,6 @@ import tensorflow as tf
 import click
 
 import cv2, pafy, youtube_dl
-from PIL import Image
 
 from distutils.version import StrictVersion
 if StrictVersion(tf.__version__) < StrictVersion('1.12.0'):
@@ -49,16 +48,10 @@ def _load_image_into_numpy_array(image):
 
 
 def image_detection(image_file):
-    """
-    image = Image.open(image_file)
-    image.show()
-    image_np = _load_image_into_numpy_array(image)
-    """
-    #print(image_file)
+
     image_np = cv2.imread(image_file, cv2.IMREAD_COLOR)
-    #print(image_np)
-    cv2.imshow('before', image_np)
     category_index = _load_label(PATH_TO_LABELS)
+    cv2.imshow('before', image_np)
     detection_graph = _load_model(tf.Graph(), PATH_TO_FROZEN_GRAPH)
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
@@ -98,7 +91,7 @@ def image_detection(image_file):
             print(results)
             print(np.squeeze(classes)[:5], np.squeeze(scores)[:5])
             cv2.imshow('object detection', image_np)
-            print("Displaying image... \nPress 'q' to exit...")
+            print("Displaying image... \n**** DO NOT CLOSE IMAGE WINDOW****\nPress 'q' to exit...")
             if cv2.waitKey(0) & 0xFF == ord('q'):
                 cv2.destroyAllWindows()
             #break
@@ -181,10 +174,10 @@ def main():#image, video):
     """
     print("Detecting smoking videos...")
     video_detection()
-    else:
+    #else:
     """
     print("Detecting smoking images...")
     image_detection('smoking_detector/datasets/image1.jpg')
-
+    #"""
 if __name__ == "__main__":
     main()

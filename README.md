@@ -12,18 +12,44 @@ Using pipenv.
 pipenv run python smoking_detector
 ```
 
+# Building Docker image
+```
+./tasks/build_api_docker.sh
+```
+
+# Testing
+With bare python
+```
+python api/app.py
+```
+
+or via Docker
+```
+tasks/run_docker.sh
+```
+
+To test object detection REST API, first set the API_URL
+```
+export API_URL=http://0.0.0.0:8000
+```
+Then we can test the `GET` method.
+```
+curl "${API_URL}/obj_detect?image_url=http://farm8.staticflickr.com/7450/9591155503_4a60f3e1d2_z.jpg"
+```
+It should return `{"class:":"elephant","percent:":0.9606022238731384}` as the name of the object and the confidence percentage.
+
 ## Project structure
 
 Web backend
 
 ```
-api/                        # Code for serving predictions as a REST API.
-    tests/test_app.py           # NOT YET IMPLEMENTED Test that predictions are working
-    Dockerfile                  # NOT YET IMPLEMENTED Specificies Docker image that runs the web server.
-    __init__.py
-    app.py                      # NOT YET IMPLEMENTED Flask web server that serves predictions.
-    mockup.py                   # app.py but running locally without Flask
-    serverless.yml              # NOT YET IMPLEMENTED Specifies AWS Lambda deployment of the REST API.
+api/                            # Code for serving predictions as a REST API.
+__  init__.py
+    cli_app.py                  # Command line app that serves predictions without flask
+    app.py                      # Flask web server that serves the predictions
+    tests/test_app.py           # Integration test for app.py
+    Dockerfile                  # Specifies Docker image that runs the web server.
+    serverless.yml              # Specifies Serverless framework for AWS Lambda deployment
 ```
 
 Data (not under version control - one level up in the heirarchy) # NOT IMPLEMENTED
@@ -44,16 +70,13 @@ Experimentation
 
 ```
 
-Convenience scripts # NOT IMPLEMENTED
+Convenience scripts
 
 ```
     tasks/
         # Deployment
         build_api_docker.sh
         deploy_api_to_lambda.sh
-
-        # Code quality
-        lint.sh
 
         # Tests
         run_prediction_tests.sh

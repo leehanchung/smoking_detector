@@ -6,7 +6,8 @@ package:
   exclude:
     - "**/*"
   include:
-    - hello_world.py
+    - ../smoking_detector/**/*
+    - app.py
 
 provider:
   name: aws
@@ -29,7 +30,7 @@ plugins:
 
 custom:
   wsgi:
-    app: hello_world.app
+    app: app.app
     packRequirements: false
   pythonRequirements:
     dockerizePip: true
@@ -40,5 +41,13 @@ custom:
       - "**/tensorboard"
       - "**/tensorflow/contrib"
       - "**/tests"
+      - "**/*.h5"
+    noDeploy:
+      - docutils
+      - pip
+      - tensorboard
+      - setuptools
+      - six
+      - python-dateutil
     strip: false
     zip: true
