@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "87dae0c06f007855514eb99b610e1f99efef20ceebd18e977893177faa67f1d1"
+            "sha256": "05da3a7dbe80dd68fdd7c37dcc5fc5641406bda4b7428721ee71a3ec991637af"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -528,9 +528,9 @@
         },
         "prometheus-client": {
             "hashes": [
-                "sha256:1b38b958750f66f208bcd9ab92a633c0c994d8859c831f7abc1f46724fcee490"
+                "sha256:ee0c90350595e4a9f36591f291e6f9933246ea67d7cd7d1d6139a9781b14eaae"
             ],
-            "version": "==0.6.0"
+            "version": "==0.7.0"
         },
         "prompt-toolkit": {
             "hashes": [
@@ -730,6 +730,14 @@
             ],
             "version": "==6.0.2"
         },
+        "tqdm": {
+            "hashes": [
+                "sha256:0a860bf2683fdbb4812fe539a6c22ea3f1777843ea985cb8c3807db448a0f7ab",
+                "sha256:e288416eecd4df19d12407d0c913cbf77aa8009d7fddb18f632aded3bdbdda6b"
+            ],
+            "index": "pypi",
+            "version": "==4.32.1"
+        },
         "traitlets": {
             "hashes": [
                 "sha256:9c4bd2d267b7153df9152698efb1050a5d84982d3384a37b2c1f7723ba3e7835",
@@ -775,11 +783,11 @@
         },
         "youtube-dl": {
             "hashes": [
-                "sha256:9f0724b15db26b14bc847830bc3affbc408d73f40e3e7e71c29f410627355f56",
-                "sha256:f73babe4bbad1c1eab3b4d74042ed8204cd62820e8489db74d3087ff9a6575df"
+                "sha256:6091e44d2f7ceb99c24b81204b9238681275706e95fcd40ad8b001e0ebd74787",
+                "sha256:93ca1ff30b99223318305cf4f30a02b8ea2cf5fdd2816f83d60aaa3c1bb19432"
             ],
             "index": "pypi",
-            "version": "==2019.5.20"
+            "version": "==2019.6.8"
         },
         "zipp": {
             "hashes": [
