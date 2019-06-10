@@ -4,11 +4,14 @@
 # app.py is the actuall app.  it imports smoking_detector's detector models
 # to make detections.
 
+"""
 try:
     import unzip_requirements  # pylint: disable=unused-import
 except ImportError:
     pass
+"""
 
+TEST
 from flask import Flask, request, jsonify
 # Must compile and install opencv-python, won't work if pip install opencv-python
 # Video processing libraries
@@ -26,6 +29,8 @@ from smoking_detector.utils.utils import ops as utils_ops
 from smoking_detector.utils.utils import label_map_util
 from smoking_detector.utils.utils import visualization_utils as vis_util
 import smoking_detector.utils.util as util
+
+from smoking_detector.smoking_detector import resnetPredictor
 
 PATH_TO_FROZEN_GRAPH = 'smoking_detector/weights/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 PATH_TO_LABELS = 'smoking_detector/datasets/mscoco_label_map.pbtxt'

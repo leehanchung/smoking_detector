@@ -1,12 +1,11 @@
 {
-  "name": "hello-world-han",
+  "name": "smoking-detector-api",
   "description": "",
   "version": "0.1.0",
-  "dependencies": {
-    "serverless-optimizer-plugin": "^2.5.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "serverless-python-requirements": "^4.3.0",
-    "serverless-wsgi": "^1.7.2"
+    "serverless-wsgi": "^1.7.2",
+    "serverless": "^1.38.0"
   }
 }
