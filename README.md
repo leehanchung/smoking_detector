@@ -28,15 +28,15 @@ or via Docker
 tasks/run_docker.sh
 ```
 
-To test object detection REST API, first set the API_URL
+To test smoking detection REST API, first set the API_URL
 ```
 export API_URL=http://0.0.0.0:8000
 ```
 Then we can test the `GET` method.
 ```
-curl "${API_URL}/obj_detect?image_url=http://farm8.staticflickr.com/7450/9591155503_4a60f3e1d2_z.jpg"
+curl "${API_URL}/smoking_detect?image_url=http://farm8.staticflickr.com/7450/9591155503_4a60f3e1d2_z.jpg"
 ```
-It should return `{"class:":"elephant","percent:":0.9606022238731384}` as the name of the object and the confidence percentage.
+It should return `{"class:":"[0]"}` as the name of the object and the confidence percentage.
 
 ## Project structure
 

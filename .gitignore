@@ -15,3 +15,4 @@ npm-debug.log
 package-lock.json
 requirements.txt-e 
 latest_model_weights.h5
+notebooks/.ipynb_checkpoints

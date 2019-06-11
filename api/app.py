@@ -11,11 +11,14 @@ except ImportError:
     pass
 """
 
-TEST
 from flask import Flask, request, jsonify
+from io import BytesIO
 # Must compile and install opencv-python, won't work if pip install opencv-python
 # Video processing libraries
 import cv2, pafy, youtube_dl
+from PIL import Image
+import requests
+
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend
@@ -30,7 +33,8 @@ from smoking_detector.utils.utils import label_map_util
 from smoking_detector.utils.utils import visualization_utils as vis_util
 import smoking_detector.utils.util as util
 
-from smoking_detector.smoking_detector import resnetPredictor
+#from smoking_detector.smoking_detector import resnetPredictor
+from smoking_detector.networks.resnet import resnet
 
 PATH_TO_FROZEN_GRAPH = 'smoking_detector/weights/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 PATH_TO_LABELS = 'smoking_detector/datasets/mscoco_label_map.pbtxt'
@@ -75,45 +79,49 @@ def _load_label(label_file):
     return label_map_util.create_category_index_from_labelmap(label_file, use_display_name=True)
 
 
-def _load_video_url():
-    return None
-
-
-def _load_image():
-    if request.method == 'POST':
-        print('POST')
-        data = request.get_json()
-        if data is None:
-            return 'no json received'
-        return util.read_b64_image(data['image'])#, grayscale=True)
+# Modified to use PIL instead of opencv-python
+def _load_image():#dim=4):
     if request.method == 'GET':
         print('GET')
         image_url = request.args.get('image_url')
         if image_url is None:
             return 'no image_url defined in query string'
         print("INFO url {}".format(image_url))
-        return util.read_image(image_url)#, grayscale=True)
+        response = requests.get(image_url)
+        img = Image.open(BytesIO(response.content))
+        return _load_image_into_numpy_array(img)#, dim)
+        #return util.read_image(image_url)#, grayscale=True)
     raise ValueError('Unsupported HTTP method')
 
 
 # INPUT: image in PIL format
 # OUTPUT: image in np format.
-def _load_image_into_numpy_array(image):
+def _load_image_into_numpy_array(image):##, dim=4):
   (im_width, im_height) = image.size
+  #if dim == 4:
   return np.array(image.getdata()).reshape(
-      (im_height, im_width, 3)).astype(np.uint8)
+        (1, im_height, im_width, 3)).astype(np.uint8)
+"""  elif dim == 3:
+      return np.array(image.getdata()).reshape(
+        (im_height, im_width, 3)).astype(np.uint8)
+"""
+
+@app.route('/smoking_detect', methods=['GET'])
+def smoking_detection():
+    #response = requests.get(url)
+    image_np = _load_image()
+    model = resnet()
+    model.load_weights('../smoking_detector/weights/latest_model_weights.h5')
+    pred = model.predict_classes(image_np)
+    #percent = 0
+
+    return jsonify({'class:': str(pred)})#, 'percent:': float(perc)})
 
 
-@app.route('/obj_detect', methods=['GET', 'POST'])
-def image_detection():
-    #image_file = 'smoking_detector/datasets/image1.jpg'#_load_image()
-    """image_np = cv2.imread(image_file)
-    #image = Image.open(image_file)
-    cv2.imshow(image_np)#image.show()
-    image_np = _load_image_into_numpy_array(image)
-    """
-    #image_np = util.read_image(image_file)
-    image_np = _load_image()  ## BUG.  IMDECODE returns None.  urlimg cant be decoded?!?!?
+@app.route('/obj_detect', methods=['GET'])#, 'POST'])
+def object_detection():
+
+    image_np = _load_image()
     category_index = _load_label(PATH_TO_LABELS)
     detection_graph = _load_model(tf.Graph(), PATH_TO_FROZEN_GRAPH)
     with detection_graph.as_default():

@@ -4,14 +4,14 @@ from typing import Callable, Dict, Tuple
 import numpy as np
 
 from smoking_detector.models.base import Model
-from smoking_detector.datasets.emnist_dataset import EmnistDataset
+#from smoking_detector.datasets.emnist_dataset import EmnistDataset
 from smoking_detector.networks.resnet import resnet
 
 
-class CharacterModel(Model):
+class SmokingResnetModel(Model):
     def __init__(self,
-                 dataset_cls: type = EmnistDataset,
-                 network_fn: Callable = mlp,
+#                 dataset_cls: type = EmnistDataset,
+                 network_fn: Callable = resnet,
                  dataset_args: Dict = None,
                  network_args: Dict = None):
         """Define the default dataset and network values for this model."""
