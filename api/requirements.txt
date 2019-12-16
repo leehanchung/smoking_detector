@@ -6,6 +6,6 @@ jsonschema==3.0.1
 numpy==1.16.4
 opencv-python==4.1.0.25
 pafy==0.5.4
-tensorflow==1.13.1
+tensorflow==1.15.0
 youtube-dl==2019.6.8
 zipp==0.5.1
