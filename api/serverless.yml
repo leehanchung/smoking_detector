@@ -1,4 +1,4 @@
-service: smoking-detector-api
+service: smoking-detector-adl
 
 frameworkVersion: ">=1.2.0 <2.0.0"
 
@@ -6,7 +6,6 @@ package:
   exclude:
     - "**/*"
   include:
-    - ../smoking_detector/**/*
     - app.py
 
 provider:
@@ -27,13 +26,14 @@ functions:
 plugins:
   - serverless-python-requirements
   - serverless-wsgi
-
 custom:
   wsgi:
     app: app.app
     packRequirements: false
   pythonRequirements:
     dockerizePip: true
+    # dockerFile: ./Dockerfile
+    dockerImage: smoking_detector_img:latest
     slim: true
     zip: true
     slimPatterns:

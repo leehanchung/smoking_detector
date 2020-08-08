@@ -1,11 +1,12 @@
-# Start from the Python 3.6  image
-# https://hub.docker.com/_/python
+# Start from the latest Long Term Support (LTS) Ubuntu version
+# FROM tensorflow/tensorflow:latest-py3
 FROM python:3.6
+# FROM ubuntu:18.04
+# FROM amazon/aws-eb-python:3.4.2-onbuild-3.5.1
 
-# Install pipenv (alpine uses apk add/update vs ubuntu apt-get
+# Install pipenv
 RUN apt-get update && apt-get install python3-pip -y && pip3 install pipenv
-
-#RUN apt-get install -y libsm6 libxext6 libxrender-dev
+RUN apt-get install -y libsm6 libxext6 libxrender-dev
 
 # Create the working directory
 RUN set -ex && mkdir /repo

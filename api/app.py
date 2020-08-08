@@ -1,49 +1,54 @@
-"""Flask web server serving smoking_detector predictions."""
+"""Flask web server serving text_recognizer predictions."""
 # From https://github.com/UnitedIncome/serverless-python-requirements
 # From https://github.com/full-stack-deep-learning/fsdl-text-recognizer-project/blob/master/lab9_sln/api/app.py
 # app.py is the actuall app.  it imports smoking_detector's detector models
 # to make detections.
-
-"""
+# make it print a segmented image online first
 try:
     import unzip_requirements  # pylint: disable=unused-import
 except ImportError:
     pass
-"""
+
 
 from flask import Flask, request, jsonify
-from io import BytesIO
-# Must compile and install opencv-python, won't work if pip install opencv-python
-# Video processing libraries
-import cv2, pafy, youtube_dl
-from PIL import Image
-import requests
+import os, sys
+import tarfile, zipfile
+from distutils.version import StrictVersion
+from collections import defaultdict
+from io import StringIO
+
+# The download section hangs when the files to be downloaded exists so adding a conditional
+import tensorflow as tf
+tf.enable_eager_execution()
+from pathlib import Path
+from typing import Union
+import six.moves.urllib as urllib
+from urllib.request import urlopen, urlretrieve
 
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend
 
-from distutils.version import StrictVersion
-if StrictVersion(tf.__version__) < StrictVersion('1.12.0'):
-  raise ImportError('Please upgrade your TensorFlow installation to v1.12.*.')
+# from smoking_detector.line_predictor import LinePredictor
+sys.path.append("..")
+# from tensorflow.models.research.object_detection.utils import ops as utils_ops
+
+if StrictVersion(tf.__version__) < StrictVersion('1.13.0'):
+  raise ImportError('Please upgrade your TensorFlow installation to v1.13.*.')
 
 # Import Utils from tensorflow object_detection directory
-from smoking_detector.utils.utils import ops as utils_ops
-from smoking_detector.utils.utils import label_map_util
-from smoking_detector.utils.utils import visualization_utils as vis_util
-import smoking_detector.utils.util as util
+#
+# from tensorflow.models.research.object_detection.utils import label_map_util
+# from tensorflow.models.research.object_detection.utils import visualization_utils as vis_util
 
-#from smoking_detector.smoking_detector import resnetPredictor
-from smoking_detector.networks.resnet import resnet
-
-PATH_TO_FROZEN_GRAPH = 'smoking_detector/weights/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
-PATH_TO_LABELS = 'smoking_detector/datasets/mscoco_label_map.pbtxt'
+# from text_recognizer.datasets import IamLinesDataset
+# import text_recognizer.util as util
 
 app = Flask(__name__)  # pylint: disable=invalid-name
 
 # Tensorflow bug: https://github.com/keras-team/keras/issues/2397
-#with backend.get_session().graph.as_default() as _:
-#    predictor = LinePredictor()  # pylint: disable=invalid-name
+# with backend.get_session().graph.as_default() as _:
+#     predictor = LinePredictor()  # pylint: disable=invalid-name
     # predictor = LinePredictor(dataset_cls=IamLinesDataset)
 
 @app.route('/')
@@ -55,9 +60,9 @@ def index():
 def predict():
     image = _load_image()
     with backend.get_session().graph.as_default() as _:
-        pred, conf = predictor.predict(image)
-        print("METRIC confidence {}".format(conf))
-        print("METRIC mean_intensity {}".format(image.mean()))
+        pred, conf = (0.0002, 0.0002) #predictor.predict(image)
+        print("meanTRIC confidence {}".format(conf))
+        print("METRIC mean_intensity {}".format(2.2)) # image.mean()
         print("INFO pred {}".format(pred))
     return jsonify({'pred': str(pred), 'conf': float(conf)})
 
@@ -65,33 +70,53 @@ def predict():
 def _detect():
     return None
 
-def _load_model(graph, model):
-    with graph.as_default():
-      od_graph_def = tf.GraphDef()
-      with tf.gfile.GFile(model, 'rb') as fid:
-        serialized_graph = fid.read()
-        od_graph_def.ParseFromString(serialized_graph)
-        tf.import_graph_def(od_graph_def, name='')
-    return graph
 
-def _load_label(label_file):
-    #category_index =
-    return label_map_util.create_category_index_from_labelmap(label_file, use_display_name=True)
+def _load_video_url():
+    return None
 
 
-# Modified to use PIL instead of opencv-python
-def _load_image():#dim=4):
+def _load_image():
+    if request.method == 'POST':
+        data = request.get_json()
+        if data is None:
+            return 'no json received'
+        return read_b64_image(data['image'], grayscale=True)
     if request.method == 'GET':
         print('GET')
         image_url = request.args.get('image_url')
         if image_url is None:
             return 'no image_url defined in query string'
         print("INFO url {}".format(image_url))
-        response = requests.get(image_url)
-        img = Image.open(BytesIO(response.content))
-        return _load_image_into_numpy_array(img)#, dim)
-        #return util.read_image(image_url)#, grayscale=True)
+        return read_image(image_url, grayscale=True)
     raise ValueError('Unsupported HTTP method')
+
+def read_b64_image(b64_string, grayscale=False):
+    return None
+    # """Load base64-encoded images."""
+    # import base64
+    # imread_flag = cv2.IMREAD_GRAYSCALE if grayscale else cv2.IMREAD_COLOR
+    # try:
+    #     _, b64_data = b64_string.split(',')
+    #     return cv2.imdecode(np.frombuffer(base64.b64decode(b64_data), np.uint8), imread_flag)
+    # except Exception as e:
+    #     raise ValueError("Could not load image from b64 {}: {}".format(b64_string, e))
+
+def read_image(image_uri: Union[Path, str], grayscale=False) -> tf.Tensor:
+    """Read image_uri."""
+
+    def read_image_from_url(image_url):
+        url_response = urlopen(str(image_url))  # nosec
+        image = tf.image.decode_image(url_response.read())
+        print(f"tf.Tensor.shape {image.shape}")
+        return image
+
+    try:
+        # img = None
+        img = read_image_from_url(image_uri)
+        assert img is not None
+    except Exception as e:
+        raise ValueError("Could not load image at {}: {}".format(image_uri, e))
+    return img
 
 
 # INPUT: image in PIL format
@@ -164,7 +189,6 @@ def object_detection():
 
 def main():
     app.run(host='0.0.0.0', port=8000, debug=False)  # nosec
-
 
 if __name__ == '__main__':
     main()
