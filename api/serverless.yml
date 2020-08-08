@@ -35,11 +35,12 @@ custom:
     # dockerFile: ./Dockerfile
     dockerImage: smoking_detector_img:latest
     slim: true
+    zip: true
     slimPatterns:
       - "**/*.egg-info*"
       - "**/doc"
       - "**/tensorboard"
       - "**/tensorflow/contrib"
       - "**/tests"
+      - "**/*test.py"
     strip: false
-    zip: true

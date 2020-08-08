@@ -9,6 +9,7 @@ try:
 except ImportError:
     pass
 
+
 from flask import Flask, request, jsonify
 import os, sys
 import tarfile, zipfile
@@ -24,7 +25,8 @@ from typing import Union
 import six.moves.urllib as urllib
 from urllib.request import urlopen, urlretrieve
 
-sys.path.append("..")
+import numpy as np
+import tensorflow as tf
 from tensorflow.keras import backend
 
 # from smoking_detector.line_predictor import LinePredictor
@@ -34,7 +36,6 @@ sys.path.append("..")
 if StrictVersion(tf.__version__) < StrictVersion('1.13.0'):
   raise ImportError('Please upgrade your TensorFlow installation to v1.13.*.')
 
-#
 # Import Utils from tensorflow object_detection directory
 #
 # from tensorflow.models.research.object_detection.utils import label_map_util
@@ -66,7 +67,7 @@ def predict():
     return jsonify({'pred': str(pred), 'conf': float(conf)})
 
 
-def detect():
+def _detect():
     return None
 
 
@@ -81,6 +82,7 @@ def _load_image():
             return 'no json received'
         return read_b64_image(data['image'], grayscale=True)
     if request.method == 'GET':
+        print('GET')
         image_url = request.args.get('image_url')
         if image_url is None:
             return 'no image_url defined in query string'
@@ -115,6 +117,74 @@ def read_image(image_uri: Union[Path, str], grayscale=False) -> tf.Tensor:
     except Exception as e:
         raise ValueError("Could not load image at {}: {}".format(image_uri, e))
     return img
+
+
+# INPUT: image in PIL format
+# OUTPUT: image in np format.
+def _load_image_into_numpy_array(image):##, dim=4):
+  (im_width, im_height) = image.size
+  #if dim == 4:
+  return np.array(image.getdata()).reshape(
+        (1, im_height, im_width, 3)).astype(np.uint8)
+"""  elif dim == 3:
+      return np.array(image.getdata()).reshape(
+        (im_height, im_width, 3)).astype(np.uint8)
+"""
+
+@app.route('/smoking_detect', methods=['GET'])
+def smoking_detection():
+    #response = requests.get(url)
+    image_np = _load_image()
+    model = resnet()
+    model.load_weights('../smoking_detector/weights/latest_model_weights.h5')
+    pred = model.predict_classes(image_np)
+    #percent = 0
+
+    return jsonify({'class:': str(pred)})#, 'percent:': float(perc)})
+
+
+@app.route('/obj_detect', methods=['GET'])#, 'POST'])
+def object_detection():
+
+    image_np = _load_image()
+    category_index = _load_label(PATH_TO_LABELS)
+    detection_graph = _load_model(tf.Graph(), PATH_TO_FROZEN_GRAPH)
+    with detection_graph.as_default():
+        with tf.Session(graph=detection_graph) as sess:
+            # Expand dimensions since the model expects images to have shape: [1, None, None, 3]
+            image_np_expanded = np.expand_dims(image_np, axis=0)
+            image_tensor = detection_graph.get_tensor_by_name('image_tensor:0')
+            # Each box represents a part of the image where a particular object was detected.
+            boxes = detection_graph.get_tensor_by_name('detection_boxes:0')
+            # Each score represent how level of confidence for each of the objects.
+            # Score is shown on the result image, together with the class label.
+            scores = detection_graph.get_tensor_by_name('detection_scores:0')
+            classes = detection_graph.get_tensor_by_name('detection_classes:0')
+            num_detections = detection_graph.get_tensor_by_name('num_detections:0')
+            # Actual detection.
+            (boxes, scores, classes, num_detections) = sess.run(
+                [boxes, scores, classes, num_detections],
+                feed_dict={image_tensor: image_np_expanded})
+
+            # Visualization of the results of a detection.
+            vis_util.visualize_boxes_and_labels_on_image_array(
+                image_np,
+                np.squeeze(boxes),
+                np.squeeze(classes).astype(np.int32),
+                np.squeeze(scores),
+                category_index,
+                use_normalized_coordinates=True,
+                line_thickness=8)
+
+            top_detected_class = category_index[np.squeeze(classes).astype(np.int32)[0]]['name']
+            top_detected_perc = np.squeeze(scores)[0]
+            # Transforming image_np back to PIL format for display
+            #detected_image = Image.fromarray(image_np, 'RGB')
+            #detected_image.show()
+            #class_name = category_index[classes[i]]['name']
+            #return jsonify({'pred': str(pred), 'conf': float(conf)})
+    return jsonify({'class:': str(top_detected_class), 'percent:': float(top_detected_perc)})
+    #return "{}: {:.2%}".format(category_index[np.squeeze(classes).astype(np.int32)[0]]['name'], np.squeeze(scores)[0])
 
 
 def main():

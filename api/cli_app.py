@@ -6,7 +6,6 @@ import tensorflow as tf
 import click
 
 import cv2, pafy, youtube_dl
-from PIL import Image
 
 from distutils.version import StrictVersion
 if StrictVersion(tf.__version__) < StrictVersion('1.12.0'):
@@ -21,12 +20,13 @@ print("Finishing loading libraries...")
 PATH_TO_FROZEN_GRAPH = 'smoking_detector/weights/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 PATH_TO_LABELS = 'smoking_detector/datasets/mscoco_label_map.pbtxt'
 
+
 # INPUT: Tensorflow graph and frozen model
 # OUTPUT: Tensorflow graph with loaded weight from frozen label
 def _load_model(graph, model):
     with graph.as_default():
       od_graph_def = tf.GraphDef()
-      with tf.gfile.GFile(PATH_TO_FROZEN_GRAPH, 'rb') as fid:
+      with tf.gfile.GFile(model, 'rb') as fid:
         serialized_graph = fid.read()
         od_graph_def.ParseFromString(serialized_graph)
         tf.import_graph_def(od_graph_def, name='')
@@ -48,11 +48,10 @@ def _load_image_into_numpy_array(image):
 
 
 def image_detection(image_file):
-    image = Image.open(image_file)
-    image.show()
-    image_np = _load_image_into_numpy_array(image)
 
+    image_np = cv2.imread(image_file, cv2.IMREAD_COLOR)
     category_index = _load_label(PATH_TO_LABELS)
+    cv2.imshow('before', image_np)
     detection_graph = _load_model(tf.Graph(), PATH_TO_FROZEN_GRAPH)
     with detection_graph.as_default():
         with tf.Session(graph=detection_graph) as sess:
@@ -82,8 +81,21 @@ def image_detection(image_file):
                 line_thickness=8)
 
             # Transforming image_np back to PIL format for display
-            detected_image = Image.fromarray(image_np, 'RGB')
-            detected_image.show()
+            #detected_image = Image.fromarray(image_np, 'RGB')
+            #detected_image.show()
+            results = ""
+            for i in range(3):
+                ##class_name = category_index[classes[i]]['name']
+                #results = results + category_index[np.squeeze(classes).astype(np.int32)[i]]['name'] + str(np.squeeze(scores)[i])
+                print("{}: {:.2%}".format(category_index[np.squeeze(classes).astype(np.int32)[i]]['name'], np.squeeze(scores)[i]))
+            print(results)
+            print(np.squeeze(classes)[:5], np.squeeze(scores)[:5])
+            cv2.imshow('object detection', image_np)
+            print("Displaying image... \n**** DO NOT CLOSE IMAGE WINDOW****\nPress 'q' to exit...")
+            if cv2.waitKey(0) & 0xFF == ord('q'):
+                cv2.destroyAllWindows()
+            #break
+            #cv2.imshow('detected_image', image_np)
     return None
 
 
@@ -152,17 +164,20 @@ def video_detection():
     print("{0} images of {1} found. Processing stopped.".format(count, count_key))
     return None
 
-@click.command()
+"""@click.command()
 @click.option('--image', type=str, default='smoking_detector/datasets/image1.jpg')
 @click.option('--video', type=str, default='https://youtu.be/dQw4w9WgXcQ')
-def main(image, video):
+"""
+def main():#image, video):
     # some click problems.
-    if video is None:
-        print("Detecting smoking videos...")
-        video_detection()
-    else:
-        print("Detecting smoking images...")
-        image_detection('smoking_detector/datasets/image1.jpg')
-
+    #if video is None:
+    """
+    print("Detecting smoking videos...")
+    video_detection()
+    #else:
+    """
+    print("Detecting smoking images...")
+    image_detection('smoking_detector/datasets/image1.jpg')
+    #"""
 if __name__ == "__main__":
     main()

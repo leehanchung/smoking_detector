@@ -19,9 +19,7 @@ COPY api/ ./api
 # Install Python dependencies
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
-RUN set -ex && pip3 install -r api/requirements.txt
-# RUN set -ex && pip3 install opencv-python==4.1.0.25
-# RUN set -ex && pip3 install youtube-dl==2019.5.20
+RUN set -ex && pip3 install --no-cache-dir -r api/requirements.txt
 
 # Run the web server
 EXPOSE 8000
