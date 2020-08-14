@@ -4,19 +4,18 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pytest = "*"
+jupyter = "*"
 
 [packages]
-numpy = "*"
-jupyter = "*"
 tensorflow = "*"
 pillow = "*"
 matplotlib = "*"
 youtube-dl = "*"
 pafy = "*"
 flask = "*"
-pytest = "*"
 tqdm = "*"
 werkzeug = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
