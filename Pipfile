@@ -9,7 +9,7 @@ jupyter = "*"
 
 [packages]
 tensorflow = "*"
-pillow = "*"
+Pillow = "*"
 matplotlib = "*"
 youtube-dl = "*"
 pafy = "*"
